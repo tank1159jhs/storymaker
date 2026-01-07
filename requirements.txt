@@ -1,0 +1,17 @@
+streamlit
+python-dotenv
+google-api-python-client
+transformers
+torch
+torchvision
+diffusers
+accelerate
+safetensors
+Pillow
+gtts
+moviepy
+opencv-python
+srt
+ffmpeg-python
+deep-translator
+edge-tts
