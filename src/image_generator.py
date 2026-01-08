@@ -18,8 +18,8 @@ SD_API_URL = "http://127.0.0.1:7861/sdapi/v1/txt2img"
 NEGATIVE_ANIME = "EasyNegative, bad-hands-5, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry"
 
 # ⭐ 실사/시네마틱용 강화 네거티브 프롬프트 (일본 배경/사물 특화)
-# → 인물 완전 제거, 사물/배경만 허용, 중국풍 건축 차단
-NEGATIVE_REALISTIC = "EasyNegative, bad-hands-5, lowres, bad anatomy, bad hands, text, error, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry, anime, cartoon, illustration, 2D, drawn, painting, CG, 3D render, unreal engine, plastic, fake, artificial, unrealistic proportions, oversaturated, person, people, human, man, woman, child, figure, silhouette, face, faces, portrait, body, crowd, pedestrian, character, Chinese architecture, Chinese style, Chinese traditional building, pagoda, Chinese temple, red pillars, Chinese ornaments, Chinese decorations, dragon motifs, Chinese roof tiles, pottery, ceramic, vase, jar, clay pot, porcelain, earthenware, terracotta, urn, jug, bowl"
+# → 인물 완전 제거, 중국풍 건축만 차단 (일본 기와는 허용)
+NEGATIVE_REALISTIC = "EasyNegative, bad-hands-5, lowres, bad anatomy, bad hands, text, error, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry, anime, cartoon, illustration, 2D, drawn, painting, CG, 3D render, unreal engine, plastic, fake, artificial, unrealistic proportions, oversaturated, person, people, human, man, woman, child, figure, silhouette, face, faces, portrait, body, crowd, pedestrian, character, Chinese architecture, Chinese style, Chinese traditional building, pagoda, Chinese temple, red pillars, Chinese ornaments, Chinese decorations, dragon motifs, repetitive roof tiles, cluttered tiles, excessive tiles, tile close-up, pottery focus, ceramic focus, vase focus, jar focus"
 
 DEFAULT_NEGATIVE_PROMPT = NEGATIVE_ANIME
 
@@ -37,8 +37,13 @@ def _generate_prompt_with_ai(text, image_style='realistic'):
 RULES:
 1. Focus on SCENERY and OBJECTS only - NO people, NO humans
 2. Describe: location, time of day, weather, objects, atmosphere
-3. Setting is JAPAN - use Japanese elements (traditional houses, cherry blossoms, temples, gardens, streets)
-4. Keep it simple: 30-40 words maximum
+3. Setting is JAPAN - use varied Japanese elements:
+   - Buildings: modern street, traditional house, wooden structure, temple gate
+   - Nature: cherry blossoms, maple trees, bamboo forest, mountain view
+   - Urban: neon signs, vending machines, quiet alley, train platform
+   - Interior: tatami room, wooden floor, paper sliding door, window light
+4. AVOID repetitive elements: Don't focus on one detail (like roof tiles)
+5. Keep it simple: 30-40 words maximum
 
 EXAMPLES:
 "駅で雨の日、彼女を見送った" → "Japanese train station platform, rainy evening, wet concrete, empty bench, departing train lights in distance, melancholic blue atmosphere"
@@ -47,7 +52,9 @@ EXAMPLES:
 
 "海辺を一人で歩いた" → "quiet Japanese beach shoreline, sunset, gentle waves, footprints in sand, peaceful solitary atmosphere, golden light"
 
-DO NOT include: people, faces, figures, pottery, Chinese architecture
+"伝統的な家で過ごした" → "traditional Japanese house interior, sunlight filtering through shoji screens, wooden floor, minimalist design, peaceful atmosphere"
+
+DO NOT include: people, faces, figures, repetitive details
 Output ONLY the prompt, no explanations."""
         
         response = requests.post(
@@ -262,16 +269,16 @@ def generate_images_from_script_only(script, scene_num=1, all_scripts=None, outp
             scene_keywords = _extract_scene_keywords(group_text)
         
         # 스타일 프롬프트 추가 (realistic, cinematic, anime 등)
-        # 🎬 일본 배경/사물 특화 - 인물 없음
+        # 🎬 일본 배경/사물 특화 - 인물 없음, 다양한 배경
         style_prompt = ''
         if image_style == 'realistic':
-            style_prompt = ', photorealistic, realistic photography, natural lighting, high resolution, 8k, masterpiece, best quality, highly detailed, cinematic composition, no people, empty scene, Japanese aesthetic, emotional atmosphere'
+            style_prompt = ', photorealistic, realistic photography, natural lighting, high resolution, 8k, masterpiece, best quality, highly detailed, cinematic composition, no people, empty scene, varied Japanese scenery, emotional atmosphere, depth of field'
         elif image_style == 'cinematic':
-            style_prompt = ', cinematic, movie scene, film still, dramatic lighting, professional color grading, film grain, shallow depth of field, anamorphic, 8k, masterpiece, highly detailed, no people, empty scene, Japanese setting, emotional storytelling, atmospheric'
+            style_prompt = ', cinematic, movie scene, film still, dramatic lighting, professional color grading, film grain, shallow depth of field, anamorphic, 8k, masterpiece, highly detailed, no people, empty scene, diverse Japanese setting, emotional storytelling, atmospheric, wide shot'
         elif image_style == 'anime':
-            style_prompt = ', anime style, best quality, vibrant colors, highly detailed, illustration, beautiful lighting, masterpiece, emotional scene, Studio Ghibli inspired, no people, scenery focus'
+            style_prompt = ', anime style, best quality, vibrant colors, highly detailed, illustration, beautiful lighting, masterpiece, emotional scene, Studio Ghibli inspired, no people, scenery focus, varied backgrounds'
         elif image_style == 'semi-realistic':
-            style_prompt = ', semi-realistic, digital painting, beautiful lighting, artstation trending, masterpiece, highly detailed, no people, empty scene, Japanese aesthetic, emotional atmosphere'
+            style_prompt = ', semi-realistic, digital painting, beautiful lighting, artstation trending, masterpiece, highly detailed, no people, empty scene, diverse Japanese aesthetic, emotional atmosphere'
         
         # ⭐ 최종 프롬프트: 장면 키워드 + 스타일
         prompt = scene_keywords + style_prompt
